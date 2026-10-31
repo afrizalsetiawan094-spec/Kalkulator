@@ -1,0 +1,661 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INJECTOR 0.1 CRAW XITERZ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0a0a0c',
+                        cardbg: '#121216',
+                        neonred: '#ff1e42',
+                        darkred: '#7f1d1d',
+                        gold: '#eab308'
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        rajdhani: ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0a0a0c;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(255, 30, 66, 0.12) 0%, transparent 75%),
+                linear-gradient(rgba(255, 30, 66, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 30, 66, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 24px 24px, 24px 24px;
+            color: #f3f4f6;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        .red-border-card {
+            background-color: #121216;
+            border: 1px solid #321317;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 30, 66, 0.05);
+        }
+
+        .red-glow-text {
+            text-shadow: 0 0 12px rgba(255, 30, 66, 0.6);
+        }
+
+        /* Custom Toggle Switch Red */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #1f1f24; transition: .3s; border-radius: 22px;
+            border: 1px solid #3f3f46;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
+            background-color: #71717a; transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #7f1d1d; border-color: #ff1e42; box-shadow: 0 0 8px rgba(255, 30, 66, 0.6); }
+        input:checked + .slider:before { transform: translateX(22px); background-color: #ff1e42; box-shadow: 0 0 5px #ff1e42; }
+
+        #wheelCanvas {
+            transition: transform 4s cubic-bezier(0.15, 0.99, 0.35, 1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between select-none">
+
+    <!-- MODAL POPUP NOTIFIKASI -->
+    <div id="customModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="red-border-card p-6 rounded-2xl max-w-sm w-full text-center space-y-4 border border-red-500 shadow-[0_0_30px_rgba(255,30,66,0.3)]">
+            <h3 id="modalTitle" class="font-orbitron font-extrabold text-lg text-red-500 red-glow-text">NOTIFIKASI</h3>
+            <p id="modalMessage" class="text-sm text-gray-200 font-mono leading-relaxed"></p>
+            <button onclick="closeModal()" class="w-full bg-red-700 hover:bg-red-600 text-white font-orbitron font-bold py-2.5 rounded-xl text-xs border border-red-400">
+                TUTUP
+            </button>
+        </div>
+    </div>
+
+    <!-- OVERLAY POV CIRCLE -->
+    <div id="povOverlay" class="hidden fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
+        <div id="povCircle" class="border-2 border-red-600 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(255,30,66,0.8)] relative" style="width: 150px; height: 150px;">
+            <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+            <div class="absolute -top-6 text-[10px] font-orbitron text-red-400 bg-black/80 px-2 py-0.5 rounded border border-red-700">POV TARGET</div>
+        </div>
+    </div>
+
+    <div class="w-full max-w-2xl mx-auto flex-grow flex flex-col">
+
+        <!-- 1. HALAMAN VERIFIKASI KEY -->
+        <div id="pageVerification" class="p-4 sm:p-6 my-auto">
+            <div class="red-border-card p-6 rounded-2xl text-center space-y-5">
+                <div class="inline-flex p-3 rounded-xl bg-red-950/40 border border-red-800/50 text-red-500 mb-1">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                
+                <div>
+                    <h1 class="font-orbitron font-black text-2xl tracking-widest text-red-500 red-glow-text">INJECTOR 0.1</h1>
+                    <p class="font-orbitron text-xs text-red-400/80 tracking-widest mt-1">CRAW XITERZ SYSTEM</p>
+                </div>
+
+                <div id="errorAlert" class="hidden p-3 bg-red-950/90 border border-red-600 text-red-200 text-xs rounded-lg font-mono text-left">
+                    [SYSTEM ERROR]: Verifikasi Key atau Kode Privat Salah!
+                </div>
+
+                <div class="space-y-4 text-left">
+                    <div>
+                        <label class="block text-xs font-orbitron text-gray-400 mb-1.5 uppercase tracking-wider">VERIFIKASI KEY</label>
+                        <input type="text" id="inputKey" placeholder="Masukkan Key..." class="w-full bg-black/60 border border-red-900/60 rounded-xl px-4 py-3 text-sm text-red-100 focus:outline-none focus:border-red-500 font-mono placeholder-gray-600">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-orbitron text-gray-400 mb-1.5 uppercase tracking-wider">KODE PRIVAT ADMIN</label>
+                        <input type="password" id="inputPrivateCode" placeholder="Masukkan Kode Privat..." class="w-full bg-black/60 border border-red-900/60 rounded-xl px-4 py-3 text-sm text-red-100 focus:outline-none focus:border-red-500 font-mono placeholder-gray-600">
+                    </div>
+
+                    <button onclick="submitVerification()" class="w-full mt-2 bg-red-700 hover:bg-red-600 text-white font-orbitron font-bold py-3.5 rounded-xl border border-red-500 shadow-[0_0_15px_rgba(255,30,66,0.4)] transition active:scale-98 tracking-wider">
+                        BUKA INJECTOR
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. LOADING SCREEN -->
+        <div id="pageLoading" class="hidden p-6 my-auto">
+            <div class="red-border-card p-8 rounded-2xl text-center space-y-4">
+                <h2 class="font-orbitron font-bold text-xl text-red-500 red-glow-text animate-pulse">SYSTEM LOADING...</h2>
+                <div class="w-full bg-black/80 rounded-full h-3 p-0.5 border border-red-900 overflow-hidden">
+                    <div id="progressBar" class="bg-red-600 h-full rounded-full transition-all duration-100" style="width: 0%"></div>
+                </div>
+                <p id="loadingPercentage" class="font-orbitron text-xs text-gray-400">0%</p>
+            </div>
+        </div>
+
+        <!-- 3. APP UTAMA -->
+        <div id="pageMain" class="hidden flex-col min-h-screen">
+            
+            <!-- HEADER BAR -->
+            <header class="flex items-center justify-between px-4 py-3 border-b border-red-950 sticky top-0 z-30 shadow-xl bg-cardbg">
+                <div class="flex items-center space-x-3">
+                    <button onclick="toggleMenu()" class="p-2 bg-red-950/60 border border-red-800/80 rounded-lg text-red-400 hover:text-white focus:outline-none active:scale-95">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1010 10A10 10 0 0012 2zm0 18a8 8 0 118-8 8 8 0 01-8 8z"/></svg>
+                        <div>
+                            <h1 class="font-orbitron font-extrabold text-sm text-red-500 tracking-wider leading-none">APK INJECTOR <span class="text-xs font-normal text-gray-400">BY CRAW</span></h1>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="location.reload()" class="p-1.5 bg-black/40 border border-red-950 rounded-lg text-gray-400 hover:text-red-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+            </header>
+
+            <!-- HAMBURGER DRAWER MENU -->
+            <div id="drawerMenu" class="fixed inset-0 bg-black/80 z-40 hidden backdrop-blur-sm" onclick="toggleMenu()">
+                <div class="w-72 bg-cardbg h-full border-r border-red-950 p-5 flex flex-col justify-between" onclick="event.stopPropagation()">
+                    <div>
+                        <div class="flex justify-between items-center mb-6 border-b border-red-950 pb-3">
+                            <h2 class="font-orbitron font-bold text-red-500 text-sm tracking-wider">NAVIGASI MENU</h2>
+                            <button onclick="toggleMenu()" class="text-gray-400 text-xl font-bold">&times;</button>
+                        </div>
+                        <nav class="space-y-2 font-orbitron text-xs">
+                            <button onclick="switchTab('dashboard')" class="w-full text-left px-4 py-3 rounded-xl border border-red-950 bg-black/40 hover:bg-red-950/40 text-gray-200 flex items-center justify-between">
+                                <span>DASHBOARD</span>
+                            </button>
+                            <button onclick="switchTab('safe')" class="w-full text-left px-4 py-3 rounded-xl border border-red-950 bg-black/40 hover:bg-red-950/40 text-gray-200 flex items-center justify-between">
+                                <span>FITUR SAFE (SAFE)</span>
+                            </button>
+                            <button onclick="switchTab('file')" class="w-full text-left px-4 py-3 rounded-xl border border-red-950 bg-black/40 hover:bg-red-950/40 text-gray-200 flex items-center justify-between">
+                                <span>FITUR FILE</span>
+                            </button>
+                            <button onclick="switchTab('brutal')" class="w-full text-left px-4 py-3 rounded-xl border border-red-950 bg-black/40 hover:bg-red-950/40 text-red-400 flex items-center justify-between">
+                                <span>FITUR BRUTAL (BANNED)</span>
+                            </button>
+                            <button onclick="switchTab('spin')" class="w-full text-left px-4 py-3 rounded-xl border border-yellow-900/40 bg-yellow-950/20 hover:bg-yellow-950/40 text-yellow-400 flex items-center justify-between">
+                                <span>SPIN RODA LUCKY</span>
+                            </button>
+                        </nav>
+                    </div>
+                    <div class="text-[10px] text-gray-600 font-mono text-center border-t border-red-950 pt-3">
+                        INJECTOR 0.1 CRAW XITERZ
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT AREA -->
+            <main class="p-4 sm:p-6 flex-grow space-y-4">
+
+                <!-- 3A. DASHBOARD TAB -->
+                <div id="tabDashboard" class="block space-y-4">
+                    <div class="red-border-card p-5 rounded-2xl space-y-2">
+                        <div class="flex items-center space-x-3 text-red-500">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <h2 class="font-orbitron font-bold text-sm text-red-400 tracking-wider">PERINGATAN KETENTUAN</h2>
+                        </div>
+                        <p class="text-xs text-gray-300 leading-relaxed font-sans">
+                            Injector ini hanya memudahkan headshot, dan jangan terlalu brutal buat nyalain semua menu nya!! injector bukan headshot headshot seperti cit, kami buat injector ini untuk memudahkan headshot dan akun lebih aman daripada cit.
+                        </p>
+                    </div>
+
+                    <div class="red-border-card p-5 rounded-2xl space-y-3">
+                        <h3 class="text-xs font-orbitron text-gray-400 uppercase tracking-wider border-b border-red-950 pb-2">STATUS RUNTIME SYSTEM</h3>
+                        <div id="statusSafeText" class="text-xs font-mono text-gray-500 flex justify-between">
+                            <span>FITUR SAFE:</span> <span class="font-bold text-gray-400">NON-AKTIF</span>
+                        </div>
+                        <div id="statusFileText" class="text-xs font-mono text-gray-500 flex justify-between">
+                            <span>FITUR FILE:</span> <span class="font-bold text-gray-400">NON-AKTIF</span>
+                        </div>
+                    </div>
+
+                    <div class="red-border-card p-5 rounded-2xl text-center space-y-3">
+                        <p class="text-xs font-orbitron text-gray-400">LAPOR KELUHAN KONTAK CS</p>
+                        <a href="https://wa.me/6289679341517" target="_blank" class="block w-full bg-red-800 hover:bg-red-700 text-white font-orbitron font-bold py-3 rounded-xl text-xs transition active:scale-98 shadow-md">
+                            CS WHATSAPP: 6289679341517
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 3B. FITUR SAFE -->
+                <div id="tabSafe" class="hidden space-y-4">
+                    <div class="red-border-card p-5 rounded-2xl space-y-4">
+                        <div class="border-b border-red-950 pb-3 flex justify-between items-center">
+                            <div>
+                                <span class="text-[10px] font-orbitron bg-green-950 text-green-400 border border-green-800 px-2.5 py-0.5 rounded">SAFE / NORMAL</span>
+                                <h2 class="font-orbitron font-bold text-base text-gray-100 mt-1">FITUR SAFE (AKUN AMAN)</h2>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-200">PELICIN LAYAR</span><label class="switch"><input type="checkbox" class="safe-toggle"><span class="slider"></span></label></div>
+                            <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-200">AIM ON POINT</span><label class="switch"><input type="checkbox" class="safe-toggle"><span class="slider"></span></label></div>
+                            <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-200">AIM ASSIST</span><label class="switch"><input type="checkbox" class="safe-toggle"><span class="slider"></span></label></div>
+                            <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-200">OPTIMIZE GAME</span><label class="switch"><input type="checkbox" class="safe-toggle"><span class="slider"></span></label></div>
+                            <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-200">AIM PERFECT</span><label class="switch"><input type="checkbox" class="safe-toggle"><span class="slider"></span></label></div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button onclick="triggerInjector('safe', true)" class="w-full bg-red-700 hover:bg-red-600 text-white font-orbitron font-bold py-3 rounded-xl text-xs mb-2 border border-red-500 shadow-md">▶ START INJECTOR SAFE</button>
+                            <button onclick="triggerInjector('safe', false)" class="w-full bg-black/60 hover:bg-black/80 text-gray-400 font-orbitron py-2.5 rounded-xl text-xs border border-red-950">NONAKTIFKAN INJECTOR</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3C. FITUR FILE -->
+                <div id="tabFile" class="hidden space-y-4">
+                    <div class="red-border-card p-5 rounded-2xl space-y-4">
+                        <div class="border-b border-red-950 pb-3 flex justify-between items-center">
+                            <div>
+                                <span class="text-[10px] font-orbitron bg-purple-950 text-purple-400 border border-purple-800 px-2.5 py-0.5 rounded">SYSTEM CONFIG</span>
+                                <h2 class="font-orbitron font-bold text-base text-gray-100 mt-1">FITUR FILE CONFIG</h2>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-200">DRAG HS 30%</span><label class="switch"><input type="checkbox" class="file-toggle"><span class="slider"></span></label></div>
+                            <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-200">AIMLOCK ON POINT 20%</span><label class="switch"><input type="checkbox" class="file-toggle"><span class="slider"></span></label></div>
+                            <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-200">EASY DRAG 40%</span><label class="switch"><input type="checkbox" class="file-toggle"><span class="slider"></span></label></div>
+                            <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-200">REGEDIT 25%</span><label class="switch"><input type="checkbox" class="file-toggle"><span class="slider"></span></label></div>
+                            <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-200">AIM CONTROL 50%</span><label class="switch"><input type="checkbox" class="file-toggle"><span class="slider"></span></label></div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button onclick="triggerInjector('file', true)" class="w-full bg-red-700 hover:bg-red-600 text-white font-orbitron font-bold py-3 rounded-xl text-xs mb-2 border border-red-500 shadow-md">▶ START INJECTOR FILE</button>
+                            <button onclick="triggerInjector('file', false)" class="w-full bg-black/60 hover:bg-black/80 text-gray-400 font-orbitron py-2.5 rounded-xl text-xs border border-red-950">NONAKTIFKAN INJECTOR</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3D. FITUR BRUTAL -->
+                <div id="tabBrutal" class="hidden space-y-4">
+                    <div class="red-border-card p-5 rounded-2xl space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-orbitron text-red-400 font-bold">POV CIRCLE TARGET OVERLAY</span>
+                            <span id="povSizeVal" class="text-xs font-mono text-gray-400">50%</span>
+                        </div>
+                        <input type="range" id="povSlider" min="0" max="100" value="50" oninput="updatePovCircle()" class="w-full accent-red-600 bg-black">
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <button onclick="showPovCircle()" class="bg-red-950/60 hover:bg-red-900 border border-red-800 text-xs py-2 rounded-lg text-red-200 font-orbitron">TAMPILKAN POV</button>
+                            <button onclick="hidePovCircle()" class="bg-black/80 border border-gray-800 text-xs py-2 rounded-lg text-gray-400 font-orbitron">BATALKAN POV</button>
+                        </div>
+                    </div>
+
+                    <div class="red-border-card p-5 rounded-2xl space-y-3">
+                        <h3 class="text-xs font-orbitron text-red-500 font-bold border-b border-red-950 pb-2">MENU FITUR BRUTAL</h3>
+                        <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-200">CONFIG HEADSHOT</span><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+                        <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-200">AIMLOCK 75%</span><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+                        <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-200">REGEDIT AUTO HEAD 80%</span><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+                        <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-200">BRUTAL MOMENT</span><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+                        <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-200">DRAG HS 70%</span><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+                    </div>
+
+                    <div class="red-border-card p-5 rounded-2xl space-y-3">
+                        <div class="flex justify-between items-center border-b border-red-950 pb-2">
+                            <div>
+                                <h4 class="text-xs font-orbitron font-bold text-red-500">BYPASS ANTI BANNED</h4>
+                                <p class="text-[10px] text-gray-400">Wajib berlangganan Rp 5.000 (Dapet 3 Tiket Spin)</p>
+                            </div>
+                            <label class="switch"><input type="checkbox" id="bypassToggle" disabled><span class="slider"></span></label>
+                        </div>
+                        <div class="space-y-2 pt-1">
+                            <input type="password" id="inputBypassCode" placeholder="Masukkan Kode Private Bypass..." class="w-full bg-black/60 border border-red-900 rounded-xl px-3 py-2.5 text-xs text-red-100 placeholder-gray-600 focus:outline-none">
+                            <button onclick="unlockBypass()" class="w-full bg-red-800 hover:bg-red-700 text-white font-orbitron text-xs font-bold py-2.5 rounded-xl border border-red-500">KUNCI (BERLANGGANAN Rp5.000)</button>
+                        </div>
+                    </div>
+
+                    <button onclick="openModal('GAME LAUNCH', 'Membuka Game Free Fire Otomatis...')" class="w-full bg-gradient-to-r from-red-800 to-red-600 hover:from-red-700 hover:to-red-500 text-white font-orbitron font-bold py-3.5 rounded-xl text-xs shadow-lg border border-red-400">LOGIN FREE FIRE OTOMATIS</button>
+                </div>
+
+                <!-- 3E. FITUR SPIN RODA (FIXED ACCURATE WHEEL) -->
+                <div id="tabSpin" class="hidden space-y-4">
+                    <div class="red-border-card p-5 rounded-2xl text-center space-y-4">
+                        <div class="border-b border-red-950 pb-2">
+                            <h2 class="font-orbitron font-extrabold text-lg text-yellow-400">SPIN RODA LUCKY</h2>
+                            <p class="text-[11px] text-gray-400 mt-1">Ketika sudah dapet file nya jangan lupa SS lalu kirim bukti ke admin buat ambil file tersebut!</p>
+                        </div>
+
+                        <div class="inline-flex bg-black/80 border border-yellow-600/60 px-4 py-1.5 rounded-full text-yellow-400 font-orbitron text-xs items-center space-x-2">
+                            <span>TIKET SPIN:</span>
+                            <span id="ticketCount" class="font-bold text-yellow-300 text-sm">0</span>
+                        </div>
+
+                        <div class="relative w-64 h-64 mx-auto my-2">
+                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 z-20 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[20px] border-t-yellow-400 filter drop-shadow-[0_0_5px_#eab308]"></div>
+                            <canvas id="wheelCanvas" width="256" height="256" class="rounded-full border-4 border-yellow-500 shadow-lg"></canvas>
+                        </div>
+
+                        <button onclick="spinWheel()" class="w-full bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:from-yellow-400 hover:to-amber-400 text-black font-orbitron font-black text-xs py-3.5 rounded-xl shadow-lg uppercase tracking-wider">
+                            PUTAR RODA SEKARANG
+                        </button>
+                    </div>
+
+                    <div class="red-border-card p-4 rounded-2xl space-y-2">
+                        <label class="block text-xs font-orbitron text-yellow-400">KLAIM KODE UNTUK SPIN (5 TIKET)</label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="inputSpinCode" placeholder="Masukan Kode Rahasia..." class="flex-grow bg-black/60 border border-red-900/80 rounded-xl px-3 py-2 text-xs text-yellow-100 placeholder-gray-600 focus:outline-none">
+                            <button onclick="claimSpinCode()" class="bg-yellow-500 hover:bg-yellow-400 text-black font-orbitron font-bold text-xs px-4 py-2 rounded-xl">KLAIM</button>
+                        </div>
+                    </div>
+
+                    <div class="red-border-card p-4 rounded-2xl space-y-2">
+                        <h3 class="text-xs font-orbitron text-gray-400">RIWAYAT HADIAH SPIN</h3>
+                        <ul id="spinHistoryList" class="text-xs font-mono text-gray-300 space-y-1 max-h-32 overflow-y-auto divide-y divide-red-950">
+                            <li class="text-gray-600 py-1">Belum ada riwayat spin.</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT SYSTEM ENGINE -->
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playTickSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.04);
+        }
+
+        function playWinSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523.25, now);
+            osc.frequency.setValueAtTime(659.25, now + 0.1);
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(now + 0.4);
+        }
+
+        function openModal(title, message) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = message;
+            document.getElementById('customModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.add('hidden');
+        }
+
+        function submitVerification() {
+            const key = document.getElementById('inputKey').value.trim();
+            const privateCode = document.getElementById('inputPrivateCode').value.trim();
+            const errorAlert = document.getElementById('errorAlert');
+
+            if (key === "CrawInjector 0.1" && privateCode === "060789") {
+                errorAlert.classList.add('hidden');
+                document.getElementById('pageVerification').classList.add('hidden');
+                document.getElementById('pageLoading').classList.remove('hidden');
+                runLoadingSequence();
+            } else {
+                errorAlert.classList.remove('hidden');
+            }
+        }
+
+        function runLoadingSequence() {
+            let progress = 0;
+            const bar = document.getElementById('progressBar');
+            const txt = document.getElementById('loadingPercentage');
+
+            const interval = setInterval(() => {
+                progress += 2;
+                bar.style.width = progress + '%';
+                txt.innerText = progress + '%';
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    document.getElementById('pageLoading').classList.add('hidden');
+                    document.getElementById('pageMain').classList.remove('hidden');
+                    document.getElementById('pageMain').classList.add('flex');
+                    initWheel();
+                }
+            }, 100);
+        }
+
+        function toggleMenu() {
+            document.getElementById('drawerMenu').classList.toggle('hidden');
+        }
+
+        function switchTab(tabName) {
+            document.getElementById('tabDashboard').classList.add('hidden');
+            document.getElementById('tabSafe').classList.add('hidden');
+            document.getElementById('tabFile').classList.add('hidden');
+            document.getElementById('tabBrutal').classList.add('hidden');
+            document.getElementById('tabSpin').classList.add('hidden');
+
+            if (tabName === 'dashboard') document.getElementById('tabDashboard').classList.remove('hidden');
+            if (tabName === 'safe') document.getElementById('tabSafe').classList.remove('hidden');
+            if (tabName === 'file') document.getElementById('tabFile').classList.remove('hidden');
+            if (tabName === 'brutal') document.getElementById('tabBrutal').classList.remove('hidden');
+            if (tabName === 'spin') document.getElementById('tabSpin').classList.remove('hidden');
+
+            toggleMenu();
+        }
+
+        let isSafeActive = false;
+        let isFileActive = false;
+
+        function triggerInjector(type, activate) {
+            const safeText = document.getElementById('statusSafeText');
+            const fileText = document.getElementById('statusFileText');
+            const delay = Math.floor(Math.random() * 2000) + 1000;
+
+            setTimeout(() => {
+                if (type === 'safe') {
+                    if (activate) {
+                        isSafeActive = true;
+                        isFileActive = false;
+                        safeText.innerHTML = '<span>FITUR SAFE:</span> <span class="text-red-400 font-bold">INJECTOR AKTIF</span>';
+                        fileText.innerHTML = '<span>FITUR FILE:</span> <span class="text-gray-500">NON-AKTIF</span>';
+                        openModal("STATUS INJECTOR", "INJECTOR AKTIF");
+                    } else {
+                        isSafeActive = false;
+                        safeText.innerHTML = '<span>FITUR SAFE:</span> <span class="text-gray-500">NON-AKTIF</span>';
+                        openModal("STATUS INJECTOR", "INJECTOR NON-AKTIF");
+                    }
+                } else if (type === 'file') {
+                    if (activate) {
+                        isFileActive = true;
+                        isSafeActive = false;
+                        fileText.innerHTML = '<span>FITUR FILE:</span> <span class="text-red-400 font-bold">INJECTOR AKTIF</span>';
+                        safeText.innerHTML = '<span>FITUR SAFE:</span> <span class="text-gray-500">NON-AKTIF</span>';
+                        openModal("STATUS INJECTOR", "INJECTOR AKTIF");
+                    } else {
+                        isFileActive = false;
+                        fileText.innerHTML = '<span>FITUR FILE:</span> <span class="text-gray-500">NON-AKTIF</span>';
+                        openModal("STATUS INJECTOR", "INJECTOR NON-AKTIF");
+                    }
+                }
+            }, delay);
+        }
+
+        function updatePovCircle() {
+            const val = document.getElementById('povSlider').value;
+            document.getElementById('povSizeVal').innerText = val + '%';
+            const size = Math.max(30, (val / 100) * 300);
+            const circle = document.getElementById('povCircle');
+            circle.style.width = size + 'px';
+            circle.style.height = size + 'px';
+        }
+
+        function showPovCircle() {
+            document.getElementById('povOverlay').classList.remove('hidden');
+        }
+
+        function hidePovCircle() {
+            document.getElementById('povOverlay').classList.add('hidden');
+        }
+
+        function unlockBypass() {
+            const code = document.getElementById('inputBypassCode').value.trim();
+            if (code === "PrivateByCraw") {
+                document.getElementById('bypassToggle').disabled = false;
+                document.getElementById('bypassToggle').checked = true;
+                ticketCount += 3;
+                document.getElementById('ticketCount').innerText = ticketCount;
+                openModal("UNLOCKED!", "BYPASS ANTI BANNED BERHASIL DIAKTIFKAN!\nSelamat Anda Mendapatkan +3 Tiket Spin Roda!");
+            } else {
+                openModal("ERROR", "Kode Private Bypass Salah!");
+            }
+        }
+
+        // SPIN RODA SYSTEM (100% ACCURATE MATH CORRECTION)
+        const items = [
+            "HOLOGRAM SENJATA", "AIMLOCK BEST SELLER", "ZONK", 
+            "DRAG HS V1", "APK BIOSKOP", "APK QR NO KTP", 
+            "ZONK", "HEADLOCK 25%", "AIMLOCK 90%"
+        ];
+        
+        const colors = [
+            "#7f1d1d", "#581c87", "#3f3f46", 
+            "#991b1b", "#6b21a8", "#27272a", 
+            "#3f3f46", "#831843", "#eab308"
+        ];
+        
+        let ticketCount = 0;
+        let spinCountTotal = 0;
+        let currentRotation = 0;
+        const usedCodes = new Set();
+        const validCodes = ["Craw060789", "Craw5555", "CrawXiterz12", "Craw987060", "CrawYETETA"];
+
+        function initWheel() {
+            const canvas = document.getElementById('wheelCanvas');
+            const ctx = canvas.getContext('2d');
+            const numSegments = items.length;
+            const anglePerSeg = (2 * Math.PI) / numSegments;
+
+            ctx.clearRect(0, 0, 256, 256);
+
+            for (let i = 0; i < numSegments; i++) {
+                // Offset canvas sebesar -90 derajat (-PI/2) agar index 0 mulai dari posisi paling atas (jarum)
+                const angle = i * anglePerSeg - (Math.PI / 2);
+                ctx.beginPath();
+                ctx.moveTo(128, 128);
+                ctx.arc(128, 128, 124, angle, angle + anglePerSeg);
+                ctx.closePath();
+
+                ctx.fillStyle = colors[i];
+                ctx.fill();
+                ctx.strokeStyle = "#ea580c";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(128, 128);
+                ctx.rotate(angle + anglePerSeg / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = (items[i] === "AIMLOCK 90%") ? "#000000" : "#ffffff";
+                ctx.font = "bold 8px Orbitron, sans-serif";
+                ctx.fillText(items[i], 112, 3);
+                ctx.restore();
+            }
+        }
+
+        function claimSpinCode() {
+            const code = document.getElementById('inputSpinCode').value.trim();
+            if (validCodes.includes(code)) {
+                if (usedCodes.has(code)) {
+                    openModal("INFO", "Kode ini sudah pernah kamu klaim!");
+                } else {
+                    usedCodes.add(code);
+                    ticketCount += 5;
+                    document.getElementById('ticketCount').innerText = ticketCount;
+                    document.getElementById('inputSpinCode').value = '';
+                    openModal("SUCCESS", "KODE BERHASIL DIKLAIM!\nKamu mendapatkan +5 Tiket Spin!");
+                }
+            } else {
+                openModal("ERROR", "Kode Rahasia Tidak Valid!");
+            }
+        }
+
+        function spinWheel() {
+            if (ticketCount <= 0) {
+                openModal("TIKET HABIS", "Tiket Spin Habis! Klaim kode privat atau unlock bypass untuk dapet tiket!");
+                return;
+            }
+
+            ticketCount--;
+            spinCountTotal++;
+            document.getElementById('ticketCount').innerText = ticketCount;
+
+            const numSegments = items.length;
+            const arcSizeDeg = 360 / numSegments;
+
+            let targetIndex = 0;
+            // 2 putaran awal dipaksa ZONK (indeks 2 atau 6)
+            if (spinCountTotal === 1 || spinCountTotal === 2) {
+                targetIndex = 2; 
+            } else {
+                const nonZonkIndices = [];
+                items.forEach((item, idx) => {
+                    if (item !== "ZONK") nonZonkIndices.push(idx);
+                });
+                targetIndex = nonZonkIndices[Math.floor(Math.random() * nonZonkIndices.length)];
+            }
+
+            // Kalkulasi matematis persis: karena canvas digambar mulai dari atas (-90 deg), 
+            // sudut tengah segmen ke-i adalah i * arcSizeDeg + (arcSizeDeg / 2).
+            const segmentCenterAngle = targetIndex * arcSizeDeg + (arcSizeDeg / 2);
+            const extraRounds = 360 * 6; // 6 putaran penuh
+            
+            // Formula rotasi akhir agar jarum di atas (0°) tepat menunjuk tengah segmen target
+            const targetRotation = currentRotation + extraRounds + (360 - (segmentCenterAngle + (currentRotation % 360)) % 360);
+
+            currentRotation = targetRotation;
+            const canvas = document.getElementById('wheelCanvas');
+            canvas.style.transform = `rotate(${targetRotation}deg)`;
+
+            const tickInterval = setInterval(() => {
+                playTickSound();
+            }, 200);
+
+            setTimeout(() => {
+                clearInterval(tickInterval);
+                playWinSound();
+                const resultText = items[targetIndex];
+                
+                openModal("SPIN RESULT", "SELAMAT! KAMU MENDAPATKAN HADIAH:\n\n👉 " + resultText + " 👈\n\nJangan lupa SS dan kirim ke Admin CS!");
+                
+                const list = document.getElementById('spinHistoryList');
+                if (list.children[0]?.innerText.includes("Belum ada")) {
+                    list.innerHTML = '';
+                }
+                const li = document.createElement('li');
+                li.className = "py-1.5 font-bold flex justify-between " + (resultText === "ZONK" ? "text-red-400" : "text-yellow-400");
+                li.innerHTML = `<span>• ${resultText}</span> <span class="text-[10px] text-gray-500 font-normal">${new Date().toLocaleTimeString()}</span>`;
+                list.prepend(li);
+
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
+
